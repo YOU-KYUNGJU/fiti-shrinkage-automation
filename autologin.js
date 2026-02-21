@@ -37,6 +37,18 @@
   }
 
   function submitLogin(form, loginButton) {
+    // Some legacy pages use inline handlers that call undefined vb_login().
+    // Prefer submitEvent/form.submit to bypass broken click handlers.
+    if (typeof global.submitEvent === 'function') {
+      global.submitEvent();
+      return true;
+    }
+
+    if (form && typeof form.submit === 'function') {
+      form.submit();
+      return true;
+    }
+
     if (loginButton) {
       const anchor = loginButton.closest ? loginButton.closest('a') : null;
       if (anchor) {
@@ -44,15 +56,6 @@
         return true;
       }
       loginButton.click();
-      return true;
-    }
-
-    if (form) {
-      const evt = new Event('submit', { bubbles: true, cancelable: true });
-      form.dispatchEvent(evt);
-      if (!evt.defaultPrevented && typeof form.submit === 'function') {
-        form.submit();
-      }
       return true;
     }
 
